@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Streamer Tierlist</title>
+
+  <!-- PNG Export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#070a12;
+      --text:#e9efff;
+      --muted:#9fb0d2;
+      --stroke:rgba(255,255,255,.12);
+      --stroke2:rgba(255,255,255,.18);
+      --shadow: 0 18px 48px rgba(0,0,0,.55);
+      --r2:22px;
+      --danger:#ef4444;
+      --ok:#22c55e;
+      --zoom: 0.90;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 18% 8%, rgba(139,92,246,.10), transparent 60%),
+        radial-gradient(900px 520px at 88% 14%, rgba(34,211,238,.08), transparent 62%),
+        radial-gradient(1000px 650px at 50% 110%, rgba(16,185,129,.06), transparent 68%),
+        var(--bg);
+      overflow-y:auto;
+    }
+    body.dragging{ cursor: grabbing; }
+
+    .zoomWrap{
+      transform: scale(var(--zoom));
+      transform-origin: top center;
+      width: calc(100% / var(--zoom));
+      margin: 0 auto;
+    }
+
+    .app{
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 18px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:16px;
+      transition: .18s grid-template-columns ease;
+    }
+    .app.sidebarCollapsed{ grid-template-columns: 72px 1fr; }
+
+    .topbar{
+      grid-column:1/-1;
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+
+    .madeByBadge{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.22);
+      background:
+        radial-gradient(140px 70px at 25% 35%, rgba(239,68,68,.22), transparent 60%),
+        radial-gradient(170px 80px at 80% 55%, rgba(139,92,246,.18), transparent 62%),
+        rgba(255,255,255,.06);
+      box-shadow: 0 14px 26px rgba(0,0,0,.32);
+      user-select:none;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .madeByDot{
+      width:10px;height:10px;border-radius:999px;
+      background: linear-gradient(135deg, rgba(239,68,68,1), rgba(139,92,246,1));
+      box-shadow: 0 0 0 3px rgba(255,255,255,.08);
+    }
+    .madeByText{
+      font-weight:950;
+      font-size:12px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      white-space:nowrap;
+    }
+
+    .title{ display:flex; flex-direction:column; min-width:0; }
+    .title h1{
+      margin:0; font-size: 14px; letter-spacing:.35px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .title .sub{
+      margin-top:2px; font-size:12px; color:var(--muted);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
+
+    .btn{
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight:850;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: .14s transform, .14s background, .14s border, .14s opacity;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.26); }
+    .btn.primary{
+      color:#06101a;
+      border-color: rgba(255,255,255,.22);
+      background: linear-gradient(135deg, rgba(139,92,246,.95), rgba(34,211,238,.70));
+      font-weight:950;
+    }
+    .btn.primary:hover{ background: linear-gradient(135deg, rgba(139,92,246,1), rgba(34,211,238,.82)); }
+    .btn.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.40); }
+    .btn.danger:hover{ background: rgba(239,68,68,.20); border-color: rgba(239,68,68,.55); }
+
+    .btn.music{
+      border-color: rgba(239,68,68,.55);
+      background:
+        radial-gradient(140px 70px at 25% 35%, rgba(239,68,68,.26), transparent 60%),
+        rgba(255,255,255,.06);
+      font-weight:950;
+    }
+    .btn.music:hover{
+      background:
+        radial-gradient(140px 70px at 25% 35%, rgba(239,68,68,.32), transparent 60%),
+        rgba(255,255,255,.08);
+    }
+
+    .panel{
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panelHeader{
+      padding:14px 14px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .panelHeader h2{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.45px;
+      text-transform:uppercase;
+      color:rgba(233,239,255,.92);
+    }
+    .panelBody{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .hint{ font-size:12px; color:var(--muted); line-height:1.35; }
+
+    .collapseBtn{
+      width:40px;height:40px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.07);
+      color: rgba(233,239,255,.95);
+      cursor:pointer;
+      transition:.14s transform,.14s background,.14s border;
+      user-select:none;
+      flex:0 0 auto;
+      font-weight:900;
+    }
+    .collapseBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.26); }
+    .sidebarCollapsed .panelBody{ display:none !important; }
+    .sidebarCollapsed .panelHeader{ justify-content:center; }
+    .sidebarCollapsed .panelHeader h2{ display:none !important; }
+
+    .settingsGroup{ display:flex; flex-direction:column; gap:10px; }
+    .tierSetting{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      padding:10px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      align-items:center;
+    }
+    .tierSetting label{ font-size:11px; color:var(--muted); display:block; margin-bottom:4px; }
+    .tierSetting input[type="text"]{
+      width:100%;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+      font-weight:900;
+      letter-spacing:.25px;
+    }
+    .miniRow{ display:flex; align-items:center; gap:10px; }
+    .colorPick{
+      width:46px;height:46px;
+      padding:0;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: transparent;
+      cursor:pointer;
+    }
+    .iconBtn{
+      width:46px;height:46px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.95);
+      cursor:pointer;
+      transition:.12s transform,.12s background,.12s border;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+      user-select:none;
+    }
+    .iconBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.24); }
+    .iconBtn.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.40); }
+    .iconBtn.danger:hover{ background: rgba(239,68,68,.20); border-color: rgba(239,68,68,.55); }
+
+    .addPlayer{
+      display:flex; flex-direction:column; gap:10px;
+      padding:12px; border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+    }
+    .field label{ display:block; font-size:11px; color:var(--muted); margin-bottom:6px; }
+    .field input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+      font-weight:800;
+    }
+    .field input[type="file"]{ padding:10px; }
+    .addRow{ display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap; }
+    .pillHint{
+      font-size:11px;
+      color: rgba(233,239,255,.70);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      padding:7px 10px;
+      border-radius: 999px;
+    }
+
+    .main{ display:flex; flex-direction:column; gap:14px; min-width:0; }
+    .topicBox{
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: rgba(0,0,0,.18);
+      box-shadow: var(--shadow);
+      padding:12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .topicLeft{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+      flex:1;
+    }
+    .topicLeft .lab{
+      font-size:11px;
+      color: var(--muted);
+      letter-spacing:.3px;
+      text-transform: uppercase;
+      font-weight:900;
+    }
+    #topicInput{
+      width: min(860px, 100%);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+      font-weight:950;
+      letter-spacing:.2px;
+    }
+
+    .tierRow{
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      overflow:hidden;
+      background: rgba(0,0,0,.18);
+    }
+    .tierTop{ display:flex; align-items:stretch; min-height: 74px; }
+
+    .tierLabel{
+      width: 200px;
+      padding:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-right:1px solid rgba(0,0,0,.35);
+      color: rgba(233,239,255,.95);
+      font-weight:950;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      position:relative;
+      background: rgba(255,255,255,.04);
+    }
+    .tierLabel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(135deg, rgba(0,0,0,.60), rgba(0,0,0,.18));
+      pointer-events:none;
+    }
+    .tierLabel .labelText, .tierLabel small{ position:relative; z-index:1; }
+    .tierLabel small{
+      font-size:11px; font-weight:900; opacity:.9;
+      background: rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 8px;
+      border-radius: 999px;
+      color: rgba(233,239,255,.95);
+    }
+
+    .dropzone{
+      flex:1;
+      padding:10px 12px;
+      display:flex;
+      flex-wrap:wrap;
+      align-content:flex-start;
+      gap:10px;
+      min-height:74px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+    }
+    .dropzone.dragover{
+      outline:2px dashed rgba(255,255,255,.22);
+      outline-offset: -6px;
+      background: rgba(255,255,255,.03);
+    }
+
+    .pool{
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .poolHeader{
+      padding:12px 14px;
+      border-bottom:1px solid var(--stroke);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .poolHeader .left{ display:flex; flex-direction:column; gap:2px; }
+    .poolHeader h3{ margin:0; font-size:13px; letter-spacing:.25px; }
+    .poolHeader .muted{ color:var(--muted); font-size:12px; }
+    .poolBody{ padding:12px; display:flex; flex-wrap:wrap; gap:10px; }
+
+    .pro{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding:10px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(120px 60px at 28% 25%, rgba(139,92,246,.18), transparent 65%),
+        radial-gradient(140px 70px at 82% 60%, rgba(34,211,238,.10), transparent 62%),
+        rgba(255,255,255,.05);
+      box-shadow: 0 14px 26px rgba(0,0,0,.30);
+      cursor:grab;
+      user-select:none;
+      transition: .12s transform, .12s border, .12s background;
+      width: 150px;
+      max-width: 150px;
+    }
+    .pro:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.22);
+      background:
+        radial-gradient(120px 60px at 28% 25%, rgba(139,92,246,.22), transparent 65%),
+        radial-gradient(140px 70px at 82% 60%, rgba(34,211,238,.14), transparent 62%),
+        rgba(255,255,255,.06);
+    }
+    .pro:active{ cursor:grabbing; transform: scale(.99); }
+
+    .avatarWrap{
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      position:relative;
+    }
+    .avatarWrap img{ width:100%; height:100%; object-fit: cover; display:block; transform: translateZ(0); }
+    .avatarWrap .noImg{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(233,239,255,.65);
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size:12px;
+      background: radial-gradient(220px 120px at 30% 30%, rgba(139,92,246,.18), transparent 60%), rgba(255,255,255,.03);
+    }
+
+    .proTop{ display:flex; align-items:flex-start; gap:8px; margin-top: 2px; }
+    .pro .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: linear-gradient(135deg, rgba(139,92,246,1), rgba(34,211,238,1));
+      box-shadow: 0 0 0 3px rgba(255,255,255,.07);
+      flex:0 0 auto;
+      margin-top: 3px;
+    }
+
+    /* ✅ 2 Zeilen, kein Abschneiden */
+    .proName{
+      font-weight:950;
+      letter-spacing:.25px;
+      text-transform: uppercase;
+      font-size: 12px;
+      line-height: 1.05;
+      flex:1;
+      white-space: normal;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      min-height: calc(2 * 1.05em);
+      word-break: break-word;
+    }
+
+    .pro .x{
+      width:26px;height:26px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.85);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      line-height:1;
+      cursor:pointer;
+      transition:.12s transform,.12s background,.12s border;
+      flex:0 0 auto;
+    }
+    .pro .x:hover{
+      transform: scale(1.05);
+      background: rgba(239,68,68,.15);
+      border-color: rgba(239,68,68,.35);
+    }
+
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.68);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index: 100;
+    }
+    .modal{
+      width:min(980px, 100%);
+      max-height: calc(100vh - 36px);
+      display:flex;
+      flex-direction:column;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 24px;
+      background:
+        radial-gradient(900px 520px at 16% 12%, rgba(139,92,246,.10), transparent 60%),
+        radial-gradient(900px 520px at 88% 18%, rgba(34,211,238,.08), transparent 62%),
+        rgba(10,15,29,.94);
+      box-shadow: 0 28px 90px rgba(0,0,0,.70);
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+    .modalHeader{
+      padding:16px 18px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex: 0 0 auto;
+    }
+    .modalHeader h3{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color: rgba(233,239,255,.92);
+    }
+    .modalBody{
+      padding:16px 18px;
+      overflow:auto;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .modalFooter{
+      padding:14px 18px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+      flex: 0 0 auto;
+    }
+
+    .summaryTierlist{ display:flex; flex-direction:column; gap:12px; }
+    .sumRow{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      overflow:hidden;
+      background: rgba(0,0,0,.18);
+    }
+    .sumTop{ display:flex; align-items:stretch; min-height:72px; }
+    .sumLabel{
+      width: 200px;
+      padding:14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-right:1px solid rgba(0,0,0,.35);
+      font-weight:950;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      position:relative;
+      background: rgba(255,255,255,.04);
+    }
+    .sumLabel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(135deg, rgba(0,0,0,.60), rgba(0,0,0,.18));
+      pointer-events:none;
+    }
+    .sumLabel .labelText, .sumLabel small{ position:relative; z-index:1; }
+    .sumLabel small{
+      font-size:11px; font-weight:900; opacity:.9;
+      background: rgba(0,0,0,.40);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 8px;
+      border-radius: 999px;
+      color: rgba(233,239,255,.95);
+    }
+    .sumNames{
+      flex:1;
+      padding:10px 12px;
+      display:flex;
+      flex-wrap:wrap;
+      align-content:flex-start;
+      gap:10px;
+      min-height:72px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00));
+    }
+
+    .sumChip{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 12px 22px rgba(0,0,0,.26);
+      user-select:none;
+      font-weight:900;
+      letter-spacing:.2px;
+      text-transform: uppercase;
+      font-size: 12px;
+      max-width: 340px;
+    }
+    .sumChip .thumb{
+      width:34px;height:34px;border-radius:10px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      flex:0 0 auto;
+    }
+    .sumChip .thumb img{ width:100%;height:100%;object-fit:cover;display:block; }
+    .sumChip .thumb .empty{
+      width:100%;height:100%;
+      display:flex;align-items:center;justify-content:center;
+      color: rgba(233,239,255,.55);
+      font-size:11px;
+      font-weight:900;
+    }
+    .sumChip .name{
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp: 2;
+      line-height: 1.05;
+      max-width: 260px;
+      word-break: break-word;
+    }
+
+    #ytBgWrap{
+      position: fixed;
+      left: -9999px;
+      top: -9999px;
+      width: 1px; height: 1px;
+      overflow:hidden;
+      opacity:0;
+      pointer-events:none;
+      z-index:-1;
+    }
+
+    .zoomCtl{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      border-radius: 14px;
+      box-shadow: 0 14px 26px rgba(0,0,0,.22);
+    }
+    .zoomCtl .lab{
+      font-size:11px;
+      font-weight:950;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color: rgba(233,239,255,.85);
+    }
+    .zoomCtl input[type="range"]{ width: 170px; accent-color: #a855f7; }
+    .zoomCtl .val{
+      font-weight:950;
+      font-size:12px;
+      color: rgba(233,239,255,.90);
+      min-width:42px;
+      text-align:right;
+    }
+
+    @media (max-width: 1100px){
+      .app{ grid-template-columns: 1fr; }
+      .app.sidebarCollapsed{ grid-template-columns: 1fr; }
+      .topbar{ position: static; }
+      .zoomWrap{ transform: none; width:100%; }
+    }
+    @media (max-width: 560px){
+      .tierLabel, .sumLabel{ width: 150px; padding:12px; }
+      .pro{ width: 140px; max-width:140px; }
+      .madeByBadge{ display:none; }
+      .zoomCtl input[type="range"]{ width:120px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="ytBgWrap"><div id="ytPlayer"></div></div>
+
+  <div class="zoomWrap" id="zoomWrap">
+    <div class="app" id="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="madeByBadge" title="Credits">
+            <span class="madeByDot"></span>
+            <span class="madeByText">MADE BY RYXII</span>
+          </div>
+
+          <div class="title">
+            <h1>Streamer Tierlist</h1>
+            <div class="sub">Drag & Drop • Auto-Scroll • Autosave • PNG Export</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <div class="zoomCtl" title="Zoom (mehr rein/raus)">
+            <span class="lab">UI ZOOM</span>
+            <input id="zoomRange" type="range" min="55" max="120" value="90" />
+            <span class="val" id="zoomVal">90%</span>
+          </div>
+
+          <button class="btn music" id="musicBtn">▶ PLAY Come N GO (YT)</button>
+          <button class="btn" id="howBtn">📘 Hilfe</button>
+
+          <button class="btn" id="exportBtn">📤 Export</button>
+          <button class="btn" id="importBtn">📥 Import</button>
+
+          <button class="btn danger" id="resetPlacementsBtn">↩️ Streamer zurück</button>
+          <button class="btn danger" id="resetAllBtn">🧨 Alles auf 0</button>
+          <button class="btn primary" id="finishBtn">✅ Fertig</button>
+        </div>
+      </header>
+
+      <aside class="panel">
+        <div class="panelHeader">
+          <button class="collapseBtn" id="toggleSidebar" title="Sidebar ein/aus">⟷</button>
+          <h2>Kategorien</h2>
+          <div style="width:40px;height:40px;"></div>
+        </div>
+
+        <div class="panelBody">
+          <div class="hint">Kategorien erstellen, umbenennen, Farben ändern oder löschen.</div>
+          <div class="settingsGroup" id="settings"></div>
+
+          <div style="margin-top:6px;display:flex;justify-content:flex-end;">
+            <button class="btn primary" id="addTierBtn">➕ Kategorie hinzufügen</button>
+          </div>
+
+          <hr style="border:none;height:1px;background:rgba(255,255,255,.08);margin:16px 0;">
+
+          <div class="hint">➕ Add Streamer (Name + Bild)</div>
+          <div class="addPlayer">
+            <div class="field">
+              <label>Streamername</label>
+              <input id="newPlayerName" placeholder="z.B. Gripey" />
+            </div>
+
+            <div class="field">
+              <label>Bild-URL (optional)</label>
+              <input id="newPlayerImageUrl" placeholder="https://...png/jpg  (oder leer lassen)" />
+            </div>
+
+            <div class="field">
+              <label>Oder Bild vom PC auswählen (optional)</label>
+              <input id="newPlayerFile" type="file" accept="image/*" />
+            </div>
+
+            <div class="addRow">
+              <span class="pillHint">Tipp: URL oder Datei – beides geht</span>
+              <button class="btn primary" id="addPlayerBtn">➕ Streamer hinzufügen</button>
+            </div>
+
+            <div class="hint" style="opacity:.9">
+              Hinweis: Wenn du ein Bild vom PC auswählst, wird es als DataURL gespeichert (größerer Export/Storage).
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topicBox">
+          <div class="topicLeft">
+            <div class="lab">Thema / Überschrift (kommt auch ins PNG)</div>
+            <input id="topicInput" placeholder="z.B. Wer ist am dümmsten? / Wer hat am meisten Geld? ..." />
+          </div>
+        </div>
+
+        <div id="tiers"></div>
+
+        <section class="pool">
+          <div class="poolHeader">
+            <div class="left">
+              <h3>STREAMER (unten) — Drag & Drop in Kategorien</h3>
+              <div class="muted">Alle Streamer starten unten im Pool.</div>
+            </div>
+            <div class="muted" id="poolCount">0 Streamer im Pool</div>
+          </div>
+          <div class="poolBody dropzone" id="pool" data-tier="POOL"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- HELP MODAL -->
+  <div class="modalBackdrop" id="helpModal">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3>Hilfe — so geht’s</h3>
+        <button class="btn" id="closeHelp">✖</button>
+      </div>
+      <div class="modalBody" style="color:rgba(233,239,255,.90);font-size:13px;line-height:1.55;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div><b>1) Thema / Überschrift:</b><br>• Oben das Thema eingeben (kommt auch in die <b>Fertig-Übersicht</b> und ins <b>PNG</b>).</div>
+          <div><b>2) Kategorien (links):</b><br>• <b>Name ändern:</b> im Textfeld tippen.<br>• <b>Farbe ändern:</b> Farbfeld anklicken.<br>• <b>Löschen:</b> 🗑️ — Streamer gehen zurück in den Pool.</div>
+          <div><b>3) Neue Kategorie:</b><br>• <b>„➕ Kategorie hinzufügen“</b> drücken.</div>
+          <div><b>4) Streamer hinzufügen:</b><br>• Name eingeben<br>• Bild per <b>URL</b> oder <b>Datei</b> hinzufügen<br>• Dann <b>„➕ Streamer hinzufügen“</b></div>
+          <div><b>5) Drag & Drop + Auto-Scroll:</b><br>• Karte ziehen und droppen.<br>• Beim Ziehen an den Rand (oben/unten) scrollt die Seite automatisch.</div>
+          <div><b>6) X / Zurück:</b><br>• Unten im Pool: <b>X löscht den Streamer</b> (komplett weg).<br>• In einer Kategorie: <b>↩ schiebt den Streamer zurück in den Pool</b>.</div>
+          <div><b>7) Export / Import:</b><br>• <b>Export</b> kopiert JSON in die Zwischenablage + lädt es als Datei (wenn möglich).<br>• <b>Import</b> lädt alles wieder rein.</div>
+          <div><b>8) Reset Buttons:</b><br>• <b>„↩️ Streamer zurück“</b> → nur Einordnung reset.<br>• <b>„🧨 Alles auf 0“</b> → kompletter Reset (setzt Streamer zurück auf Start-Liste).</div>
+          <div><b>9) Musik (YT):</b><br>• Button oben startet/pausiert YouTube im Hintergrund.</div>
+          <div class="pillHint" style="align-self:flex-start;">Autosave ist aktiv: Alles bleibt gespeichert.</div>
+        </div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn primary" id="okHelp">Okay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY MODAL -->
+  <div class="modalBackdrop" id="summaryModal">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3>End-Übersicht — deine Zuordnung</h3>
+        <button class="btn" id="closeSummary">✖</button>
+      </div>
+
+      <div class="modalBody">
+        <div id="summaryExportWrap" style="padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(7,10,18,.65);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0;">
+              <div class="madeByBadge" style="transform:scale(.96);align-self:flex-start;">
+                <span class="madeByDot"></span>
+                <span class="madeByText">MADE BY RYXII</span>
+              </div>
+              <div style="font-weight:950;letter-spacing:.4px;text-transform:uppercase;font-size:12px;opacity:.92;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                Streamer Tierlist — End-Übersicht
+              </div>
+              <div id="summaryTopic" style="font-size:14px;font-weight:950;letter-spacing:.2px;">
+                Thema: —
+              </div>
+            </div>
+          </div>
+
+          <div id="summaryTierlist" class="summaryTierlist"></div>
+        </div>
+      </div>
+
+      <div class="modalFooter">
+        <button class="btn primary" id="downloadPngBtn">⬇️ Save / Download (PNG)</button>
+        <button class="btn" id="backBtn">Zurück ↩</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT MODAL -->
+  <div class="modalBackdrop" id="importModal">
+    <div class="modal">
+      <div class="modalHeader">
+        <h3>Import</h3>
+        <button class="btn" id="closeImport">✖</button>
+      </div>
+      <div class="modalBody" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="hint">Füge dein Export-JSON hier ein. Danach „Importieren“.</div>
+        <textarea id="importArea" style="width:100%;min-height:220px;resize:vertical;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--text);padding:12px;outline:none;font-weight:800;line-height:1.35;"></textarea>
+        <div class="hint" style="opacity:.9">Achtung: Import überschreibt deinen aktuellen Stand.</div>
+      </div>
+      <div class="modalFooter">
+        <button class="btn danger" id="doImportBtn">📥 Importieren</button>
+        <button class="btn" id="cancelImportBtn">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    const $  = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    function safeKeyFromName(name){
+      const base = (name || "").trim().toUpperCase().replace(/\s+/g, "_").replace(/[^A-Z0-9_]/g, "");
+      return base || ("S" + String(Date.now()));
+    }
+
+    // MUSIC
+    const YT_VIDEO_ID = "4gub6C8OLhU";
+    let ytPlayer = null;
+    let ytReady = false;
+
+    function onYouTubeIframeAPIReady(){ ytReady = true; }
+
+    function ensureYTPlayer(){
+      if(ytPlayer || !ytReady) return;
+      ytPlayer = new YT.Player('ytPlayer', {
+        height: '1',
+        width: '1',
+        videoId: YT_VIDEO_ID,
+        playerVars: { autoplay:0, controls:0, disablekb:1, fs:0, modestbranding:1, rel:0, iv_load_policy:3 },
+        events: {
+          onReady: ()=> { try{ ytPlayer.setVolume(65); }catch(e){} },
+          onStateChange: (e)=>{
+            if(e.data === YT.PlayerState.PLAYING) setMusicBtn(true);
+            else if(e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) setMusicBtn(false);
+          }
+        }
+      });
+    }
+    function setMusicBtn(isPlaying){
+      $("#musicBtn").textContent = isPlaying ? "⏸ Pause Come N GO (YT)" : "▶ PLAY Come N GO (YT)";
+    }
+    function toggleMusic(){
+      const fallbackUrl = "https://www.youtube.com/watch?v=" + YT_VIDEO_ID;
+      if(!ytReady){ window.open(fallbackUrl, "YeatMusicTab"); return; }
+      ensureYTPlayer();
+      try{
+        const st = ytPlayer.getPlayerState();
+        if(st === YT.PlayerState.PLAYING) ytPlayer.pauseVideo();
+        else ytPlayer.playVideo();
+      }catch(e){ window.open(fallbackUrl, "YeatMusicTab"); }
+    }
+
+    // Colors
+    const GOLDEN_ANGLE = 137.508;
+    function hslToHex(h, s, l){
+      s/=100; l/=100;
+      const k = n => (n + h/30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => l - a * Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n), 1)));
+      const toHex = x => Math.round(255 * x).toString(16).padStart(2,"0");
+      return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+    }
+    function colorForIndex(i){
+      const h = (i * GOLDEN_ANGLE) % 360;
+      return hslToHex(h, 70, 38);
+    }
+
+    // Defaults
+    const tierDefaults = Array.from({length: 8}).map((_, i)=>({
+      id: crypto?.randomUUID?.() ? crypto.randomUUID() : String(Date.now()+i),
+      name: "...",
+      color: colorForIndex(i)
+    }));
+
+    // ✅ ALL STREAMERS (inkl. neue)
+    const initialStreamers = [
+      { key:"GRIPEY",  name:"Gripey",  img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474172516917579909/1B194021-9E1C-4996-92B9-64E991BA43D2.png?ex=6998e1a4&is=69979024&hm=e2559fcf9c73f9b39863823f82868eed5ce6cc2a30d4928b257ca6604d058302&" },
+      { key:"REZON",   name:"Rezon",   img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474172993990037717/657C1622-1118-4898-BFAE-5944623AF9BB.png?ex=6998e216&is=69979096&hm=4316af26efd9ba2565c18f79be1d677235574af1dd57769097c8525fd34a1b31&" },
+      { key:"CHANTI",  name:"Chanti",  img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474173272286564370/00B0E627-E04F-471F-9D73-3A32484441E0.png?ex=6998e258&is=699790d8&hm=0b7a8abdef035b0737108bfd1aa2958d0d37e710f7a673d9e2c55bacf025d3b4&" },
+      { key:"VADEAL",  name:"Vadeal",  img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474173427484197121/04899622-21FF-4F90-9382-54B2922FF2C8.png?ex=6998e27d&is=699790fd&hm=29ded81db15dab7850bc5e28fde9404a6eac755c249e24062428d0eddc67c9e2&" },
+      { key:"DREXLER", name:"Drexler", img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474173544475656273/6251486D-23FA-4BCE-A9AE-A7229D35B2BB.png?ex=6998e299&is=69979119&hm=2a91e77059ffa0c7a4188be13a58fc039c8eabe5aef4f91070049603f19ad2ef&" },
+      { key:"MARLI",   name:"Marli",   img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474173745462644796/ED37C868-671C-4D28-BA96-8E0A4309A195.png?ex=6998e2c9&is=69979149&hm=3aba29478db473acea21192980b95bb165bcf4391320a126ce0131d287b32c0a&" },
+      { key:"PLUTO",   name:"Pluto",   img:"https://cdn.discordapp.com/attachments/1361721609404027022/1474187280175333582/801A8C33-C645-4F7C-93D9-E2C452FCD7AC.png?ex=69999824&is=699846a4&hm=33a653dc4f8f9a3f2e48607d32887fa36beda701b29d40bb5f919204cc5cede5&" },
+      { key:"THEO",    name:"Theo",    img:"https://cdn.discordapp.com/attachments/1473001257810530314/1474402866696290560/B98199E7-2BEE-4066-BD05-AED16CB594EE.png?ex=6999b82c&is=699866ac&hm=c6a5a84d90475e530b1a8f2bcefc59fe350357d9089a1b36e6720a2444b60c8c&" },
+
+      { key:"MONTE", name:"Monte", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474402990566936597/image.png?ex=6999b84a&is=699866ca&hm=7108a77a152fa57696621b7343091b2c11ff9af74ee472d418278857a8dbe94f&" },
+      { key:"ELI", name:"Eli", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474403880052981873/image.png?ex=6999b91e&is=6998679e&hm=4a0a6262fd225fff931229b7c9467ed2caabb5f69992205ddbb5b91960dee946&" },
+      { key:"SIDNEY", name:"Sidney", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474404233867563018/image.png?ex=6999b972&is=699867f2&hm=0bf8cb11e5e93c54e523657807d393499ecc765b7d9cd54019d542626bea2487&" },
+      { key:"PAPAPLATTE", name:"Papaplatte", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474404692636336310/image.png?ex=6999b9df&is=6998685f&hm=bfae50eec10982cf4703db16ba8af7ee94f95253956fe08457028870a10069bd&" },
+      { key:"SCHRADIN", name:"Schradin", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474404954033623092/image.png?ex=6999ba1e&is=6998689e&hm=9a2697b972dbdb1564016b5b3c400388caacb64853ffd863c17f5e5f6a8ed9ea&" },
+      { key:"ALVIVB", name:"AlviVB", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474405402983792791/image.png?ex=6999ba89&is=69986909&hm=17739b52f0ee271366654639d74d0456ec53c6faa173d441e1ca5bade24ff1e7&" },
+      { key:"DANIELSLUMP", name:"Danielslump", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474405972347981896/image.png?ex=6999bb10&is=69986990&hm=8b30c11d62856ea42531a819f444435f1533b7412fd368fc74ed59049e3a2722&" },
+      { key:"GAMERBROTHER", name:"Gamerbrother", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474406150308106321/image.png?ex=6999bb3b&is=699869bb&hm=4a8ac71795a59870b70cdf3fec53e915f6d9c444270ebfad7c729885aa9702ce&" },
+      { key:"MARCOSCM", name:"Marcoscm", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474429501646831758/image.png?ex=6999d0fa&is=69987f7a&hm=b83f9478a265645143a675801ea3369e41a14a2071180632d8f67154473a9c3a&" },
+      { key:"ROHAT", name:"Rohat", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474431005866594486/image.png?ex=6999d261&is=699880e1&hm=89739b436c3fb9eb68334057474a4f41da929a1c134a383ee903357e947d3581&" },
+      { key:"ELDOS", name:"Eldos", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474431406326284358/image.png?ex=6999d2c0&is=69988140&hm=392487ca8f31ea2cdfea48729a48634d5db4d281522e919ff243a043333af63d&" },
+      { key:"MUSTI", name:"Musti", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474431729463726253/image.png?ex=6999d30d&is=6998818d&hm=089ce529a8efa3e14b2f833401051c8e81e91dc2b7561731d38a64ba28b40ad7&" },
+      { key:"AMAR", name:"Amar", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474432051980800032/image.png?ex=6999d35a&is=699881da&hm=16311e5de43e167cd9cc34ee5d7c88cf389d54ea4d0e2488b4990dacbe3fe0a9&" },
+      { key:"KATOO", name:"Katoo", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474432605418950656/image.png?ex=6999d3de&is=6998825e&hm=e9def638232893bfa021640793518aaea85ec33ba299cdf5c8805c1e7ce2525b&" },
+      { key:"HAMEDLOCO", name:"Hamedloco", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474432783064764426/image.png?ex=6999d409&is=69988289&hm=d149f03f08da19a444e2ab5c35b38339e799e9cf97290d7a65c15a5e5e3a085b&" },
+      { key:"NOOREAX", name:"Nooreax", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474433072232530012/image.png?ex=6999d44e&is=699882ce&hm=bb46f6a4005e68bff1e15d74b5f1e3a3490f5ebc1cb0698a0152ab8e5454eb6a&" },
+      { key:"GTASTY", name:"Gtasty", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474433424956592241/image.png?ex=6999d4a2&is=69988322&hm=f2b1215febda866028acfc32cc7d6de0d885cb5f81eff585a1579cb5bf6364ff&" },
+      { key:"FAISTER", name:"Faister", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474433273009799178/image.png?ex=6999d47d&is=699882fd&hm=f7ff1eeb426bb8b9f40ea0377068fa2d9823077a6a3eeb2ff1b48d353a3d3097&" },
+      { key:"WICHTIGER", name:"Wichtiger", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474433866927444171/image.png?ex=6999d50b&is=6998838b&hm=fcc847167e1fbc59704e4c07372f9b9a8fb03136891ceb99456f289220916dbe&" },
+      { key:"STANDARTSKILL", name:"StandartSkill", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474434030907822111/image.png?ex=6999d532&is=699883b2&hm=d9f34b1c78e8b889b2728d803b0108a8b957fbf9a3f427c7aba220d0dacbe7ce&" },
+      { key:"ABUGOKU", name:"Abugoku", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474434691074625606/image.png?ex=6999d5d0&is=69988450&hm=dace9c55fb2370d68c3f2049db344d58aa3847e4f8a5c3d17f81c34aeffa4303&" },
+      { key:"KUBA", name:"Kuba", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474435616707186748/image.png?ex=6999d6ac&is=6998852c&hm=bdbdb1aef98d959991b7ad252dd647a07320971b050b4f31289d70ad6ed72d2d&" },
+      { key:"KNOSSI", name:"Knossi", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474437679247654923/image.png?ex=6999d898&is=69988718&hm=3c6cad5b3a9d7e2820af2dbb76e30b2ce855d3a523f7d4ff62fe6abba62e3ed0&" },
+      { key:"ZARBEX", name:"Zarbex", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474437959737544925/image.png?ex=6999d8db&is=6998875b&hm=3d4e02260d1f65aa33c08c259f7beeb97e352fb40690c68180ea3c99098125bb&" },
+      { key:"EDIZ", name:"ediz", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474438512416915486/image.png?ex=6999d95f&is=699887df&hm=6c0f264d6393c484a5660c58c6d513a3e44c7c0b71b3ebe7d73f7999046db728&" },
+
+      { key:"ALIBUMAYE", name:"Alibumaye", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474439117202001920/image.png?ex=6999d9ef&is=6998886f&hm=aaf91e7c4c5819c44f7a3a51eb31d61d60175515f71add878d12941fe5db5608&" },
+      { key:"BCHELORBBY", name:"Bchelorbby", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474439561764536340/image.png?ex=6999da59&is=699888d9&hm=8ac4ac528aedbdf33280815d997f55c099fa84ad9c6f0dc0c48fa70b9ddb7bbf&" },
+      { key:"MAUSABI", name:"Mausabi", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474439786973364365/image.png?ex=6999da8e&is=6998890e&hm=caf2a8691ac5212e0389e5057143115dd1ecdc556d8a60b8c2f77960fb4b6a4d&" },
+      { key:"TRYMACS", name:"Trymacs", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474440367498854411/image.png?ex=6999db19&is=69988999&hm=a9a79d49f91201f8145cdf91692c38fa9101b3902d2374d5197ffd88d2892c24&" },
+      { key:"RIITON", name:"Riiton", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474440761352257588/image.png?ex=6999db77&is=699889f7&hm=25a3deb953c9d4bb70ebb3ff9632d9fc074b02ee7d450f1c9c3dd3a0e9cfadd8&" },
+      { key:"ADAMJRWEST", name:"Adamjrwest", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474441164370477197/image.png?ex=6999dbd7&is=69988a57&hm=df0f97ceecd9f8b108e0970f2d456b9a9872702cece8fa3c33fde5be225a19aa&" },
+      { key:"WILLY", name:"Willy", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474441381698080921/image.png?ex=6999dc0b&is=69988a8b&hm=88e8019a2f51f02c3f0a766b2840ac17cb0cd1098705974519b766ce710549b4&" },
+      { key:"REEZY", name:"Reezy", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474441909958086786/image.png?ex=6999dc89&is=69988b09&hm=af3d58471466dd14bb11fa9f6915497a946446716382b63d8e93e7732109660f&" },
+      { key:"MEXIFY", name:"Mexify", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474442358782431262/image.png?ex=6999dcf4&is=69988b74&hm=6f1a63801f5b0a0490655b0add489390c003cd4aa4fbc5142736987e581abe56&" },
+      { key:"LETSHUGO", name:"LetsHugo", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474442670544912608/image.png?ex=6999dd3e&is=69988bbe&hm=f996aa50dedeeb7e193ef864dced71f762af96f0c2b098499122bb4b4d349d12&" },
+      { key:"FLYINGUWE", name:"Flyinguwe", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474442894445252681/image.png?ex=6999dd73&is=69988bf3&hm=0d4d37dc955961f57e73cba85f5dc970f643d1f8537f5e23291088ed956f63cf&" },
+      { key:"TOMATOLIX", name:"Tomatolix", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474443280430141665/image.png?ex=6999ddcf&is=69988c4f&hm=55ffbd103d221d4777b8c2ea5a19ae249035e35c128d2c791b3f4a390a1c240e&" },
+      { key:"EVANIJO", name:"Evanijo", img:"https://cdn.discordapp.com/attachments/1457854589058678834/1474443675802009682/image.png?ex=6999de2e&is=69988cae&hm=d969b754e6085fefa227a16b80f22f91fcb423afd8eb253690393474106cab9b&" },
+
+      /* ✅ NEW ONES YOU SENT NOW */
+      { key:"ACHRAF", name:"Achraf", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474466555692581081/image.png?ex=6999f37d&is=6998a1fd&hm=b2afdb0d40d47b6c7a221d9c31e94de079d884c08e7733162cb219aa7203d609&" },
+      { key:"MIALILIAA", name:"Mialiliaa", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474455628771754298/image.png?ex=6999e94f&is=699897cf&hm=df8958fbda1e7f1b97a451401d0b30691d5da890882d3aeeb2c4b2e362702602&" },
+      { key:"MELINA", name:"Melina", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474454727264571518/image.png?ex=6999e879&is=699896f9&hm=b50717b48343a9d0b232d0cfc62bfd47bebbb7c98f6e3276f2b941283de8d2ef&" },
+      { key:"ROSEMONDY", name:"Rosemondy", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474454422712094884/image.png?ex=6999e830&is=699896b0&hm=31f30f762d3a839767a87891735cf0228d354bd2eb837436f1fb9ff5000bc4c3&" },
+      { key:"ELQUARIA", name:"Elquaria", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474456158247981308/image.png?ex=6999e9ce&is=6998984e&hm=48b78546827d69d200533694ede9c8b1e8ed6f52f7ee65176c8f7582e57f4a58&" },
+      { key:"WIEKE", name:"Wieke", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474456846059175936/image.png?ex=6999ea72&is=699898f2&hm=dab958515aaf0a7328eb0eb1a797aa9d13203a7accd5b8d57fdf8cf9e8ee201b&" },
+      { key:"BRECKIE", name:"Breckie", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474457523112378538/image.png?ex=6999eb13&is=69989993&hm=0e66c1d45c8bf7d0bfcd3657038e8a2a90f45a210f0676413880f0f92170a005&" },
+      { key:"KATHIYESSIR", name:"Kathiyessir", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474458172453425263/image.png?ex=6999ebae&is=69989a2e&hm=eba6a97fb66ab18aa7c528bed2534455fff91810dc608c15d566a288ed067bc0&" },
+      { key:"SOMMERSET", name:"Sommerset", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474458560569020605/image.png?ex=6999ec0a&is=69989a8a&hm=71b59bd8615f86fe54d351f716dee3b711473b3daf89dcbfc81d0e7fbddba0d5&" },
+      { key:"FRANTIC", name:"Frantic", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474458918100009001/image.png?ex=6999ec60&is=69989ae0&hm=84323368aa52e2aed6c44073f5b5df7632851e7f1f5c088dd053a920f5b4c547&" },
+      { key:"TRIXSIE", name:"Trixsie", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474459441704210607/image.png?ex=6999ecdd&is=69989b5d&hm=16af785654ea255017e4ae23d9511e94616d10a37f944761163d655f6cb034fb&" },
+      { key:"DALIA", name:"Dalia", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474460152773087313/image.png?ex=6999ed86&is=69989c06&hm=5e90c86e6e2161b6babee9ae6b82a4b7869b7978a49cf7546b2abb49ddce3b76&" },
+      { key:"KATHI", name:"Kathi", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474460393903755448/image.png?ex=6999edc0&is=69989c40&hm=ac2f85d19345d2429a8a81f8f5af748e05dded7729e7f150a5b03bd517120435&" },
+      { key:"LAURA", name:"Laura", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474460837505667162/image.png?ex=6999ee29&is=69989ca9&hm=2cf94db7f7e3d73543ef95d9dc71d4dea79f87a1952e2a0311c3ddf44dfd95d7&" },
+      { key:"SAMANTRA", name:"Samantra", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474461796663427162/6D51F40B-1541-43D8-88C2-5B248371716B.png?ex=6999ef0e&is=69989d8e&hm=41e3d110a56c43a1cdd7d408b7784609cf7f20fcb9b91a955c525ecea676d3b3&" },
+      { key:"KATHARINAAMALIA", name:"KatharinaAmalia", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474463383012114646/channels4_profile.jpg?ex=6999f088&is=69989f08&hm=af2fa4d95aab926204db521acb3ade83aef90636ae29877f6071220c0463d305&" },
+      { key:"FIBI", name:"Fibi", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474463831798583367/image.png?ex=6999f0f3&is=69989f73&hm=cc1ccb896793c001f75339b0bd9000df2853959d64df6b9db9862a5eee8972d4&" },
+      { key:"HONEYPuU".toUpperCase(), name:"HoneyPuu", img:"https://cdn.discordapp.com/attachments/1458874591492706376/1474464310377058314/1E815FFF-93B9-4CEA-948E-73197F8A7C5B.png?ex=6999f165&is=69989fe5&hm=cfe8ebd397a60816b04b389aca12b04b9b56645a6fdd29aa155fbc9edfb1d3de&" }
+    ];
+
+    // AUTOSAVE
+    const SAVE_KEY = "streamer-tierlist-v2";
+
+    const state = {
+      tiers: JSON.parse(JSON.stringify(tierDefaults)),
+      placements: {},
+      streamers: [],
+      data: {},
+      nextTierIndex: tierDefaults.length,
+      topic: "",
+      zoom: 0.90
+    };
+
+    function saveState(){
+      try{ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }catch(e){}
+    }
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(SAVE_KEY);
+        if(!raw) return false;
+        const data = JSON.parse(raw);
+        if(!data || !Array.isArray(data.tiers) || !data.placements || !Array.isArray(data.streamers) || !data.data) return false;
+
+        state.tiers = data.tiers;
+        state.placements = data.placements;
+        state.streamers = data.streamers;
+        state.data = data.data;
+        state.nextTierIndex = data.nextTierIndex || state.tiers.length;
+        state.topic = data.topic || "";
+        state.zoom = typeof data.zoom === "number" ? data.zoom : 0.90;
+        return true;
+      }catch(e){}
+      return false;
+    }
+
+    // AUTO SCROLL
+    const AUTO_SCROLL_MARGIN = 90;
+    const AUTO_SCROLL_SPEED  = 18;
+    let dragKey = null;
+    let scrollRAF = null;
+    let dropping=false;
+
+    function startAutoScroll(){
+      if(scrollRAF) return;
+      const tick = () => {
+        if(!dragKey){ scrollRAF = null; return; }
+        const y = window.__lastPointerY ?? null;
+        if(y !== null){
+          if(y < AUTO_SCROLL_MARGIN) window.scrollBy(0, -AUTO_SCROLL_SPEED);
+          else if (y > window.innerHeight - AUTO_SCROLL_MARGIN) window.scrollBy(0, AUTO_SCROLL_SPEED);
+        }
+        scrollRAF = requestAnimationFrame(tick);
+      };
+      scrollRAF = requestAnimationFrame(tick);
+    }
+    function stopAutoScroll(){
+      dragKey = null;
+      document.body.classList.remove("dragging");
+      if(scrollRAF){ cancelAnimationFrame(scrollRAF); scrollRAF = null; }
+    }
+    window.addEventListener("dragover", (e)=>{
+      window.__lastPointerY = e.clientY;
+      if(dropping) startAutoScroll();
+    }, {passive:true});
+    window.addEventListener("drop", ()=> { dropping=false; stopAutoScroll(); }, {passive:true});
+    window.addEventListener("dragend", ()=> { dropping=false; stopAutoScroll(); }, {passive:true});
+
+    function setNiceDragImage(e, el){
+      try{
+        const clone = el.cloneNode(true);
+        clone.style.position = "fixed";
+        clone.style.top = "-9999px";
+        clone.style.left = "-9999px";
+        clone.style.width = getComputedStyle(el).width;
+        clone.style.boxShadow = "0 22px 60px rgba(0,0,0,.65)";
+        clone.style.transform = "scale(1.03)";
+        clone.style.opacity = "0.98";
+        document.body.appendChild(clone);
+        e.dataTransfer.setDragImage(clone, 20, 20);
+        setTimeout(()=> clone.remove(), 0);
+      }catch(err){}
+    }
+
+    function fitNameToBox(nameEl){
+      if(!nameEl) return;
+      nameEl.style.fontSize = "";
+      nameEl.style.letterSpacing = "";
+      let size = 12;
+      nameEl.style.fontSize = size + "px";
+      for(let i=0;i<10;i++){
+        if(nameEl.scrollHeight <= nameEl.clientHeight) break;
+        size -= 1;
+        if(size < 9) break;
+        nameEl.style.fontSize = size + "px";
+      }
+      if(size <= 10) nameEl.style.letterSpacing = ".15px";
+    }
+
+    function openModal(id){ document.querySelector(id).style.display = "flex"; }
+    function closeModal(id){ document.querySelector(id).style.display = "none"; }
+
+    function setPlacement(key, tierId){
+      state.placements[key] = tierId;
+      saveState();
+    }
+    function getPlacement(key){
+      return state.placements[key] || "POOL";
+    }
+
+    function droppable(el){
+      el.addEventListener("dragover", (e)=>{ e.preventDefault(); el.classList.add("dragover"); });
+      el.addEventListener("dragleave", ()=> el.classList.remove("dragover"));
+      el.addEventListener("drop", (e)=>{
+        e.preventDefault();
+        el.classList.remove("dragover");
+        const key = e.dataTransfer.getData("text/plain");
+        if(!key) return;
+        setPlacement(key, el.dataset.tier);
+        renderAll();
+      });
+    }
+
+    function removeStreamerCompletely(key){
+      state.streamers = state.streamers.filter(k => k !== key);
+      delete state.placements[key];
+      delete state.data[key];
+      saveState();
+      renderAll();
+    }
+    function returnStreamerToPool(key){
+      state.placements[key] = "POOL";
+      saveState();
+      renderAll();
+    }
+
+    function streamerEl(key){
+      const info = state.data[key] || {name:key, img:""};
+      const name = info.name || key;
+      const img = info.img || "";
+      const placement = getPlacement(key);
+
+      const el = document.createElement("div");
+      el.className = "pro";
+      el.draggable = true;
+
+      const av = document.createElement("div");
+      av.className = "avatarWrap";
+      if(img){
+        const im = document.createElement("img");
+        im.src = img;
+        im.alt = name;
+        im.loading = "lazy";
+        av.appendChild(im);
+      }else{
+        const no = document.createElement("div");
+        no.className = "noImg";
+        no.textContent = "NO IMAGE";
+        av.appendChild(no);
+      }
+
+      const top = document.createElement("div");
+      top.className = "proTop";
+
+      const dot = document.createElement("span");
+      dot.className = "dot";
+
+      const text = document.createElement("div");
+      text.className = "proName";
+      text.textContent = name;
+      requestAnimationFrame(()=> fitNameToBox(text));
+
+      const x = document.createElement("button");
+      x.className = "x";
+      x.type = "button";
+
+      if(placement === "POOL"){
+        x.title = "Streamer löschen (nur wenn unten im Pool)";
+        x.textContent = "×";
+        x.addEventListener("click", (e)=>{ e.stopPropagation(); removeStreamerCompletely(key); });
+      } else {
+        x.title = "Zurück in den Pool";
+        x.textContent = "↩";
+        x.addEventListener("click", (e)=>{ e.stopPropagation(); returnStreamerToPool(key); });
+      }
+      x.addEventListener("pointerdown", (e)=> e.stopPropagation());
+
+      top.append(dot, text, x);
+      el.append(av, top);
+
+      el.addEventListener("dragstart", (e)=>{
+        dropping=true;
+        dragKey = key;
+        document.body.classList.add("dragging");
+        startAutoScroll();
+
+        e.dataTransfer.setData("text/plain", key);
+        e.dataTransfer.effectAllowed = "move";
+        el.style.opacity = "0.7";
+        setNiceDragImage(e, el);
+      });
+      el.addEventListener("dragend", ()=> {
+        el.style.opacity = "1";
+        stopAutoScroll();
+      });
+
+      return el;
+    }
+
+    function addTier(name="..."){
+      const id = crypto?.randomUUID?.() ? crypto.randomUUID() : String(Date.now()+Math.random());
+      const idx = state.nextTierIndex++;
+      state.tiers.push({ id, name, color: colorForIndex(idx) });
+      saveState();
+      renderAll();
+    }
+    function deleteTier(tierId){
+      for(const k of state.streamers){
+        if(getPlacement(k) === tierId) state.placements[k] = "POOL";
+      }
+      state.tiers = state.tiers.filter(t => t.id !== tierId);
+      saveState();
+      renderAll();
+    }
+
+    function renderSettings(){
+      const wrap = $("#settings");
+      wrap.innerHTML = "";
+
+      state.tiers.forEach((t, idx)=>{
+        const box = document.createElement("div");
+        box.className = "tierSetting";
+
+        const left = document.createElement("div");
+        const lab = document.createElement("label");
+        lab.textContent = `Kategorie ${idx+1}`;
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = t.name;
+
+        let renameTimer = null;
+        input.addEventListener("input", ()=>{
+          t.name = input.value;
+          saveState();
+          clearTimeout(renameTimer);
+          renameTimer = setTimeout(()=> renderTiers(), 60);
+        });
+
+        left.append(lab, input);
+
+        const right = document.createElement("div");
+        right.className = "miniRow";
+
+        const color = document.createElement("input");
+        color.type = "color";
+        color.className = "colorPick";
+        color.value = t.color;
+        color.addEventListener("input", ()=>{
+          t.color = color.value;
+          saveState();
+          renderTiers();
+        });
+
+        const del = document.createElement("button");
+        del.className = "iconBtn danger";
+        del.title = "Kategorie löschen";
+        del.textContent = "🗑";
+        del.addEventListener("click", ()=>{
+          if(confirm(`Kategorie "${t.name}" löschen? (Streamer gehen zurück in Pool)`)) deleteTier(t.id);
+        });
+
+        right.append(color, del);
+        box.append(left, right);
+        wrap.appendChild(box);
+      });
+    }
+
+    function renderTiers(){
+      const tiersWrap = $("#tiers");
+      tiersWrap.innerHTML = "";
+
+      state.tiers.forEach(t=>{
+        const row = document.createElement("section");
+        row.className = "tierRow";
+
+        const top = document.createElement("div");
+        top.className = "tierTop";
+
+        const label = document.createElement("div");
+        label.className = "tierLabel";
+        label.style.background = `linear-gradient(135deg, ${t.color}, rgba(255,255,255,.06))`;
+
+        const txt = document.createElement("div");
+        txt.className = "labelText";
+        txt.textContent = t.name;
+
+        const count = document.createElement("small");
+        const c = state.streamers.filter(k => getPlacement(k) === t.id).length;
+        count.textContent = String(c);
+
+        label.append(txt, count);
+
+        const zone = document.createElement("div");
+        zone.className = "dropzone";
+        zone.dataset.tier = t.id;
+        droppable(zone);
+
+        top.append(label, zone);
+        row.appendChild(top);
+        tiersWrap.appendChild(row);
+      });
+    }
+
+    function renderStreamers(){
+      $$(".dropzone").forEach(z => z.innerHTML = "");
+      state.streamers.forEach(key=>{
+        const place = getPlacement(key);
+        const target = document.querySelector(`.dropzone[data-tier="${place}"]`);
+        if(target) target.appendChild(streamerEl(key));
+      });
+      const poolCount = state.streamers.filter(k => getPlacement(k) === "POOL").length;
+      $("#poolCount").textContent = `${poolCount} Streamer im Pool`;
+    }
+
+    function renderTopic(){ $("#topicInput").value = state.topic || ""; }
+    function renderZoom(){
+      const pct = Math.round((state.zoom || 0.90) * 100);
+      document.documentElement.style.setProperty("--zoom", String(state.zoom || 0.90));
+      $("#zoomRange").value = String(pct);
+      $("#zoomVal").textContent = pct + "%";
+      saveState();
+    }
+
+    function renderAll(){
+      renderSettings();
+      renderTiers();
+      droppable($("#pool"));
+      renderStreamers();
+      renderTopic();
+      renderZoom();
+    }
+
+    function resetPlacementsOnly(){
+      state.placements = {};
+      saveState();
+      renderAll();
+    }
+
+    function resetEverythingToZero(){
+      if(!confirm(
+        "ALLES auf 0 setzen?\n\nDas setzt zurück:\n- Kategorien/Farben (Standard)\n- alle Einordnungen\n- Thema/Zoom\n- gespeicherte Daten\n\nStreamer-Liste wird wieder auf die Start-Streamer gesetzt.\n\nFortfahren?"
+      )) return;
+
+      try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+
+      state.tiers = JSON.parse(JSON.stringify(tierDefaults));
+      state.placements = {};
+      state.nextTierIndex = tierDefaults.length;
+      state.topic = "";
+      state.zoom = 0.90;
+
+      state.streamers = [];
+      state.data = {};
+
+      for(const s of initialStreamers){
+        const key = (s.key || safeKeyFromName(s.name || "STREAMER")).toUpperCase();
+        state.data[key] = { name: s.name || key, img: s.img || "" };
+        if(!state.streamers.includes(key)) state.streamers.push(key);
+        state.placements[key] = "POOL";
+      }
+
+      saveState();
+      renderAll();
+    }
+
+    function getTierStreamers(tierId){
+      return state.streamers
+        .filter(k => getPlacement(k) === tierId)
+        .slice()
+        .sort((a,b)=> (state.data[a]?.name||a).localeCompare(state.data[b]?.name||b));
+    }
+
+    function renderSummaryTierlist(){
+      const wrap = $("#summaryTierlist");
+      wrap.innerHTML = "";
+
+      const topic = (state.topic || "").trim();
+      $("#summaryTopic").textContent = topic ? ("Thema: " + topic) : "Thema: —";
+
+      state.tiers.forEach(t=>{
+        const list = getTierStreamers(t.id);
+
+        const row = document.createElement("div");
+        row.className = "sumRow";
+
+        const top = document.createElement("div");
+        top.className = "sumTop";
+
+        const label = document.createElement("div");
+        label.className = "sumLabel";
+        label.style.background = `linear-gradient(135deg, ${t.color}, rgba(255,255,255,.06))`;
+
+        const left = document.createElement("div");
+        left.className = "labelText";
+        left.textContent = t.name;
+
+        const count = document.createElement("small");
+        count.textContent = String(list.length);
+
+        label.append(left, count);
+
+        const names = document.createElement("div");
+        names.className = "sumNames";
+
+        if(!list.length){
+          const empty = document.createElement("div");
+          empty.className = "sumChip";
+          empty.style.opacity = ".55";
+          empty.textContent = "—";
+          names.appendChild(empty);
+        } else {
+          for(const k of list){
+            const info = state.data[k] || {name:k, img:""};
+            const chip = document.createElement("div");
+            chip.className = "sumChip";
+
+            const thumb = document.createElement("div");
+            thumb.className = "thumb";
+            if(info.img){
+              const im = document.createElement("img");
+              im.src = info.img;
+              im.alt = info.name || k;
+              thumb.appendChild(im);
+            } else {
+              const empty = document.createElement("div");
+              empty.className = "empty";
+              empty.textContent = "—";
+              thumb.appendChild(empty);
+            }
+
+            const nm = document.createElement("div");
+            nm.className = "name";
+            nm.textContent = (info.name || k);
+
+            chip.append(thumb, nm);
+            names.appendChild(chip);
+          }
+        }
+
+        top.append(label, names);
+        row.appendChild(top);
+        wrap.appendChild(row);
+      });
+    }
+
+    async function downloadSummaryPng(){
+      const exportNode = $("#summaryExportWrap");
+      await new Promise(r => setTimeout(r, 80));
+
+      const canvas = await html2canvas(exportNode, {
+        backgroundColor: "#070a12",
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      const stamp = new Date();
+      const pad = (n)=> String(n).padStart(2,"0");
+      a.download = `streamer-tierlist-${stamp.getFullYear()}-${pad(stamp.getMonth()+1)}-${pad(stamp.getDate())}-${pad(stamp.getHours())}${pad(stamp.getMinutes())}.png`;
+      a.href = dataUrl;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function readFileAsDataURL(file){
+      return new Promise((resolve, reject)=>{
+        const fr = new FileReader();
+        fr.onload = ()=> resolve(String(fr.result || ""));
+        fr.onerror = reject;
+        fr.readAsDataURL(file);
+      });
+    }
+
+    async function addStreamerFromInputs(){
+      const name = ($("#newPlayerName").value || "").trim();
+      const url = ($("#newPlayerImageUrl").value || "").trim();
+      const file = $("#newPlayerFile").files && $("#newPlayerFile").files[0] ? $("#newPlayerFile").files[0] : null;
+
+      if(!name){ alert("Bitte Streamername eingeben."); return; }
+
+      let img = "";
+      if(url) img = url;
+      else if(file){
+        try{ img = await readFileAsDataURL(file); }
+        catch(e){ alert("Bild-Datei konnte nicht gelesen werden."); return; }
+      }
+
+      const keyBase = safeKeyFromName(name);
+      let key = keyBase;
+
+      if(state.streamers.includes(key)){
+        let i = 2;
+        while(state.streamers.includes(`${keyBase}_${i}`)) i++;
+        key = `${keyBase}_${i}`;
+      }
+
+      state.data[key] = { name, img };
+      state.streamers.push(key);
+      state.placements[key] = "POOL";
+
+      saveState();
+
+      $("#newPlayerName").value = "";
+      $("#newPlayerImageUrl").value = "";
+      $("#newPlayerFile").value = "";
+      renderAll();
+    }
+
+    function getExportPayload(){
+      return { version: 1, app: "streamer-tierlist", exportedAt: new Date().toISOString(), state };
+    }
+
+    async function doExport(){
+      const payload = getExportPayload();
+      const txt = JSON.stringify(payload, null, 2);
+
+      try{ await navigator.clipboard.writeText(txt); }catch(e){}
+
+      try{
+        const blob = new Blob([txt], {type:"application/json"});
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "streamer-tierlist-export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(()=> URL.revokeObjectURL(a.href), 800);
+      }catch(e){}
+
+      alert("Export ✅ (Zwischenablage + JSON-Datei, wenn möglich)");
+    }
+
+    function applyImported(payload){
+      if(!payload || !payload.state) throw new Error("Ungültiges JSON (kein state).");
+      const s = payload.state;
+      if(!Array.isArray(s.tiers) || !s.placements || !Array.isArray(s.streamers) || !s.data)
+        throw new Error("Ungültiges JSON (Struktur passt nicht).");
+
+      state.tiers = s.tiers;
+      state.placements = s.placements;
+      state.streamers = s.streamers;
+      state.data = s.data;
+      state.nextTierIndex = s.nextTierIndex || s.tiers.length;
+      state.topic = s.topic || "";
+      state.zoom = typeof s.zoom === "number" ? s.zoom : 0.90;
+
+      saveState();
+      renderAll();
+    }
+    function doImportFromText(txt){
+      const payload = JSON.parse(txt);
+      applyImported(payload);
+    }
+
+    function seedInitialStreamersIfMissing(){
+      let changed = false;
+      for(const s of initialStreamers){
+        const key = (s.key || safeKeyFromName(s.name || "STREAMER")).toUpperCase();
+        if(!state.data[key]){ state.data[key] = { name: s.name || key, img: s.img || "" }; changed = true; }
+        if(!state.streamers.includes(key)){ state.streamers.push(key); changed = true; }
+        if(!state.placements[key]) state.placements[key] = "POOL";
+      }
+      if(changed) saveState();
+    }
+
+    function init(){
+      const loaded = loadState();
+      if(!loaded){
+        for(const s of initialStreamers){
+          const key = (s.key || safeKeyFromName(s.name || "STREAMER")).toUpperCase();
+          state.data[key] = { name: s.name || key, img: s.img || "" };
+          if(!state.streamers.includes(key)) state.streamers.push(key);
+          state.placements[key] = "POOL";
+        }
+        saveState();
+      } else {
+        seedInitialStreamersIfMissing();
+      }
+      renderAll();
+    }
+
+    // Events
+    $("#toggleSidebar").addEventListener("click", ()=> $("#app").classList.toggle("sidebarCollapsed"));
+
+    $("#howBtn").addEventListener("click", ()=> openModal("#helpModal"));
+    $("#closeHelp").addEventListener("click", ()=> closeModal("#helpModal"));
+    $("#okHelp").addEventListener("click", ()=> closeModal("#helpModal"));
+
+    $("#musicBtn").addEventListener("click", toggleMusic);
+
+    $("#addTierBtn").addEventListener("click", ()=> addTier("..."));
+
+    $("#addPlayerBtn").addEventListener("click", ()=> addStreamerFromInputs());
+    $("#newPlayerName").addEventListener("keydown", (e)=>{ if(e.key === "Enter") addStreamerFromInputs(); });
+    $("#newPlayerImageUrl").addEventListener("keydown", (e)=>{ if(e.key === "Enter") addStreamerFromInputs(); });
+
+    $("#topicInput").addEventListener("input", ()=>{
+      state.topic = $("#topicInput").value;
+      saveState();
+    });
+
+    $("#zoomRange").addEventListener("input", ()=>{
+      const pct = parseInt($("#zoomRange").value, 10);
+      state.zoom = Math.max(0.55, Math.min(1.20, pct/100));
+      renderZoom();
+    });
+
+    $("#exportBtn").addEventListener("click", ()=> doExport());
+    $("#importBtn").addEventListener("click", ()=>{
+      $("#importArea").value = "";
+      openModal("#importModal");
+    });
+    $("#closeImport").addEventListener("click", ()=> closeModal("#importModal"));
+    $("#cancelImportBtn").addEventListener("click", ()=> closeModal("#importModal"));
+    $("#doImportBtn").addEventListener("click", ()=>{
+      const txt = ($("#importArea").value || "").trim();
+      if(!txt){ alert("Bitte JSON einfügen."); return; }
+      if(!confirm("Importieren? Das überschreibt deinen aktuellen Stand.")) return;
+      try{
+        doImportFromText(txt);
+        closeModal("#importModal");
+        alert("Import ✅");
+      }catch(e){
+        alert("Import fehlgeschlagen: " + (e?.message || "Unbekannter Fehler"));
+      }
+    });
+
+    $("#resetPlacementsBtn").addEventListener("click", ()=>{
+      if(confirm("Alle Streamer zurück in den Pool setzen? (Kategorien bleiben)")) resetPlacementsOnly();
+    });
+    $("#resetAllBtn").addEventListener("click", resetEverythingToZero);
+
+    $("#finishBtn").addEventListener("click", ()=>{
+      renderSummaryTierlist();
+      openModal("#summaryModal");
+    });
+    $("#closeSummary").addEventListener("click", ()=> closeModal("#summaryModal"));
+    $("#backBtn").addEventListener("click", ()=> closeModal("#summaryModal"));
+    $("#downloadPngBtn").addEventListener("click", ()=>{
+      downloadSummaryPng().catch(()=> alert("PNG Download ging nicht. Versuch kurz Chrome/Edge oder Blocker/Shields aus."));
+    });
+
+    ["#helpModal","#summaryModal","#importModal"].forEach(id=>{
+      document.querySelector(id).addEventListener("click", (e)=>{
+        if(e.target === document.querySelector(id)) closeModal(id);
+      });
+    });
+
+    init();
+  </script>
+</body>
+</html>
