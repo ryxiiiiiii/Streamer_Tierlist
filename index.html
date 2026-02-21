@@ -941,70 +941,76 @@
       color: colorForIndex(i)
     }));
 
-    // ✅ ALL STREAMERS (inkl. neue)
+    // ✅ NUR IMGUR STREAMER
     const initialStreamers = [
+      { key:"REZON", name:"Rezon", img:"https://i.imgur.com/jZH41pB.png" },
+      { key:"GRIPEY", name:"Gripey", img:"https://i.imgur.com/sRTIFfu.png" },
+      { key:"DREXLER", name:"Drexler", img:"https://i.imgur.com/SsQIVpW.png" },
+      { key:"THEO", name:"Theo", img:"https://i.imgur.com/MyKyf0w.png" },
+      { key:"PLUTO", name:"Pluto", img:"https://i.imgur.com/tDheVpw.png" },
+      { key:"CHANTI", name:"Chanti", img:"https://i.imgur.com/4nN8GAK.png" },
+      { key:"VADEAL", name:"Vadeal", img:"https://i.imgur.com/ior3Mke.png" },
+      { key:"MARLI", name:"Marli", img:"https://i.imgur.com/iGR2FpP.png" },
 
-{ key:"MONTE", name:"Monte", img:"https://i.imgur.com/5AXiQUq.png" },
-{ key:"ELI", name:"Eli", img:"https://i.imgur.com/o8lwF5g.png" },
-{ key:"SIDNEY", name:"Sidney", img:"https://i.imgur.com/Ecoq0KR.png" },
-{ key:"PAPAPLATTE", name:"Papaplatte", img:"https://i.imgur.com/kTjs1Zs.png" },
-{ key:"SCHRADIN", name:"Schradin", img:"https://i.imgur.com/br3BqTv.png" },
-{ key:"ALVIVB", name:"AlviVB", img:"https://i.imgur.com/S6R2CCh.png" },
-{ key:"DANIELSLUMP", name:"Danielslump", img:"https://i.imgur.com/3Xngi9T.png" },
-{ key:"GAMERBROTHER", name:"Gamerbrother", img:"https://i.imgur.com/8j8exzP.png" },
-{ key:"MARCOSCM", name:"Marcoscm", img:"https://i.imgur.com/OqTge0y.png" },
-{ key:"MARLI", name:"Marli", img:"https://i.imgur.com/zTkFYEk.png" },
-{ key:"ROHAT", name:"Rohat", img:"https://i.imgur.com/ps10Cwj.png" },
-{ key:"ELDOS", name:"Eldos", img:"https://i.imgur.com/JzGBddm.png" },
-{ key:"MUSTI", name:"Musti", img:"https://i.imgur.com/gVqGHCT.png" },
-{ key:"AMAR", name:"Amar", img:"https://i.imgur.com/au2Xp24.png" },
-{ key:"KATOO", name:"Katoo", img:"https://i.imgur.com/7tiVEio.png" },
-{ key:"HAMEDLOCO", name:"Hamedloco", img:"https://i.imgur.com/9FRbfca.png" },
-{ key:"NOOREAX", name:"Nooreax", img:"https://i.imgur.com/YdlQknq.png" },
-{ key:"GTASTY", name:"Gtasty", img:"https://i.imgur.com/kMVuFor.png" },
-{ key:"FAISTER", name:"Faister", img:"https://i.imgur.com/DZ9YiNG.png" },
-{ key:"WICHTIGER", name:"Wichtiger", img:"https://i.imgur.com/zWrTqCk.png" },
-{ key:"STANDARTSKILL", name:"StandartSkill", img:"https://i.imgur.com/GJCpexs.png" },
-{ key:"ABUGOKU", name:"Abugoku", img:"https://i.imgur.com/kVHxUER.png" },
-{ key:"KUBA", name:"Kuba", img:"https://i.imgur.com/cr1AhUm.png" },
-{ key:"KNOSSI", name:"Knossi", img:"https://i.imgur.com/Y0aXPbm.png" },
-{ key:"ZARBEX", name:"Zarbex", img:"https://i.imgur.com/phWVE74.png" },
-{ key:"EDIZ", name:"ediz", img:"https://i.imgur.com/74E5NL7.png" },
-{ key:"ALIBUMAYE", name:"Alibumaye", img:"https://i.imgur.com/JfLL97q.png" },
-{ key:"BCHELORBby".toUpperCase(), name:"Bchelorbby", img:"https://i.imgur.com/sD5etXY.png" },
-{ key:"MAUSABI", name:"Mausabi", img:"https://i.imgur.com/7dn7ywe.png" },
-{ key:"TRYMACS", name:"Trymacs", img:"https://i.imgur.com/GE9gxaK.png" },
-{ key:"RIITON", name:"Riiton", img:"https://i.imgur.com/SQe5f6E.png" },
-{ key:"ADAMJRWEST", name:"Adamjrwest", img:"https://i.imgur.com/ovYcbLW.png" },
-{ key:"WILLY", name:"Willy", img:"https://i.imgur.com/NsOqpvB.png" },
-{ key:"REEZY", name:"Reezy", img:"https://i.imgur.com/leFPSSY.png" },
-{ key:"MEXIFY", name:"Mexify", img:"https://i.imgur.com/abhf0Ac.png" },
-{ key:"LETSHUGO", name:"LetsHugo", img:"https://i.imgur.com/kaFeEUn.png" },
-{ key:"FLYINGUWE", name:"Flyinguwe", img:"https://i.imgur.com/h1bSCvd.png" },
-{ key:"TOMATOLIX", name:"Tomatolix", img:"https://i.imgur.com/FHgpSSc.png" },
-{ key:"EVANIJO", name:"Evanijo", img:"https://i.imgur.com/KGFAfjG.png" },
-{ key:"KONY", name:"Kony", img:"https://i.imgur.com/xQfIjBg.png" },
-{ key:"ACHRAF", name:"Achraf", img:"https://i.imgur.com/f6of9L3.png" },
-{ key:"MIALILIAA", name:"Mialiliaa", img:"https://i.imgur.com/rcxvA47.png" },
-{ key:"SOPHIA", name:"Sophia", img:"https://i.imgur.com/fqwRlnQ.png" },
-{ key:"MELINA", name:"Melina", img:"https://i.imgur.com/ZIvIB9A.png" },
-{ key:"ROSEMONDY", name:"Rosemondy", img:"https://i.imgur.com/TAo5bIl.png" },
-{ key:"ELQUARIA", name:"Elquaria", img:"https://i.imgur.com/LszGDGS.png" },
-{ key:"WIEKE", name:"Wieke", img:"https://i.imgur.com/SH1M7bC.png" },
-{ key:"BRECKIE", name:"Breckie", img:"https://i.imgur.com/fO77CNU.png" },
-{ key:"KATHIYESSIR", name:"Kathiyessir", img:"https://i.imgur.com/xKo5xmf.png" },
-{ key:"SOMMERSET", name:"Sommerset", img:"https://i.imgur.com/IcgNHB1.png" },
-{ key:"FRANTIC", name:"Frantic", img:"https://i.imgur.com/L4yDoDd.png" },
-{ key:"TRIXI", name:"Trixi", img:"https://i.imgur.com/y6QBKju.png" },
-{ key:"DALIA", name:"Dalia", img:"https://i.imgur.com/QLDsSQ2.png" },
-{ key:"KATHI", name:"Kathi", img:"https://i.imgur.com/j9wxES4.png" },
-{ key:"LAURA", name:"Laura", img:"https://i.imgur.com/nAlrRnH.png" },
-{ key:"SAMANTRA", name:"Samantra", img:"https://i.imgur.com/WBNEejq.png" },
-{ key:"KATHARINAAMALIA", name:"KatharinaAmalia", img:"https://i.imgur.com/EV55mDa.jpeg" },
-{ key:"FIBI", name:"Fibi", img:"https://i.imgur.com/NkNsMg6.png" },
-{ key:"HONEYPuu".toUpperCase(), name:"HoneyPuu", img:"https://i.imgur.com/33KmuKr.png" }
-
-];
+      { key:"MONTE", name:"Monte", img:"https://i.imgur.com/5AXiQUq.png" },
+      { key:"ELI", name:"Eli", img:"https://i.imgur.com/o8lwF5g.png" },
+      { key:"SIDNEY", name:"Sidney", img:"https://i.imgur.com/Ecoq0KR.png" },
+      { key:"PAPAPLATTE", name:"Papaplatte", img:"https://i.imgur.com/kTjs1Zs.png" },
+      { key:"SCHRADIN", name:"Schradin", img:"https://i.imgur.com/br3BqTv.png" },
+      { key:"ALVIVB", name:"AlviVB", img:"https://i.imgur.com/S6R2CCh.png" },
+      { key:"DANIELSLUMP", name:"Danielslump", img:"https://i.imgur.com/3Xngi9T.png" },
+      { key:"GAMERBROTHER", name:"Gamerbrother", img:"https://i.imgur.com/8j8exzP.png" },
+      { key:"MARCOSCM", name:"Marcoscm", img:"https://i.imgur.com/OqTge0y.png" },
+      { key:"ROHAT", name:"Rohat", img:"https://i.imgur.com/ps10Cwj.png" },
+      { key:"ELDOS", name:"Eldos", img:"https://i.imgur.com/JzGBddm.png" },
+      { key:"MUSTI", name:"Musti", img:"https://i.imgur.com/gVqGHCT.png" },
+      { key:"AMAR", name:"Amar", img:"https://i.imgur.com/au2Xp24.png" },
+      { key:"KATOO", name:"Katoo", img:"https://i.imgur.com/7tiVEio.png" },
+      { key:"HAMEDLOCO", name:"Hamedloco", img:"https://i.imgur.com/9FRbfca.png" },
+      { key:"NOOREAX", name:"Nooreax", img:"https://i.imgur.com/YdlQknq.png" },
+      { key:"GTASTY", name:"Gtasty", img:"https://i.imgur.com/kMVuFor.png" },
+      { key:"FAISTER", name:"Faister", img:"https://i.imgur.com/DZ9YiNG.png" },
+      { key:"WICHTIGER", name:"Wichtiger", img:"https://i.imgur.com/zWrTqCk.png" },
+      { key:"STANDARTSKILL", name:"StandartSkill", img:"https://i.imgur.com/GJCpexs.png" },
+      { key:"ABUGOKU", name:"Abugoku", img:"https://i.imgur.com/kVHxUER.png" },
+      { key:"KUBA", name:"Kuba", img:"https://i.imgur.com/cr1AhUm.png" },
+      { key:"KNOSSI", name:"Knossi", img:"https://i.imgur.com/Y0aXPbm.png" },
+      { key:"ZARBEX", name:"Zarbex", img:"https://i.imgur.com/phWVE74.png" },
+      { key:"EDIZ", name:"ediz", img:"https://i.imgur.com/74E5NL7.png" },
+      { key:"ALIBUMAYE", name:"Alibumaye", img:"https://i.imgur.com/JfLL97q.png" },
+      { key:"BCHELORBby".toUpperCase(), name:"Bchelorbby", img:"https://i.imgur.com/sD5etXY.png" },
+      { key:"MAUSABI", name:"Mausabi", img:"https://i.imgur.com/7dn7ywe.png" },
+      { key:"TRYMACS", name:"Trymacs", img:"https://i.imgur.com/GE9gxaK.png" },
+      { key:"RIITON", name:"Riiton", img:"https://i.imgur.com/SQe5f6E.png" },
+      { key:"ADAMJRWEST", name:"Adamjrwest", img:"https://i.imgur.com/ovYcbLW.png" },
+      { key:"WILLY", name:"Willy", img:"https://i.imgur.com/NsOqpvB.png" },
+      { key:"REEZY", name:"Reezy", img:"https://i.imgur.com/leFPSSY.png" },
+      { key:"MEXIFY", name:"Mexify", img:"https://i.imgur.com/abhf0Ac.png" },
+      { key:"LETSHUGO", name:"LetsHugo", img:"https://i.imgur.com/kaFeEUn.png" },
+      { key:"FLYINGUWE", name:"Flyinguwe", img:"https://i.imgur.com/h1bSCvd.png" },
+      { key:"TOMATOLIX", name:"Tomatolix", img:"https://i.imgur.com/FHgpSSc.png" },
+      { key:"EVANIJO", name:"Evanijo", img:"https://i.imgur.com/KGFAfjG.png" },
+      { key:"KONY", name:"Kony", img:"https://i.imgur.com/xQfIjBg.png" },
+      { key:"ACHRAF", name:"Achraf", img:"https://i.imgur.com/f6of9L3.png" },
+      { key:"MIALILIAA", name:"Mialiliaa", img:"https://i.imgur.com/rcxvA47.png" },
+      { key:"SOPHIA", name:"Sophia", img:"https://i.imgur.com/fqwRlnQ.png" },
+      { key:"MELINA", name:"Melina", img:"https://i.imgur.com/ZIvIB9A.png" },
+      { key:"ROSEMONDY", name:"Rosemondy", img:"https://i.imgur.com/TAo5bIl.png" },
+      { key:"ELQUARIA", name:"Elquaria", img:"https://i.imgur.com/LszGDGS.png" },
+      { key:"WIEKE", name:"Wieke", img:"https://i.imgur.com/SH1M7bC.png" },
+      { key:"BRECKIE", name:"Breckie", img:"https://i.imgur.com/fO77CNU.png" },
+      { key:"KATHIYESSIR", name:"Kathiyessir", img:"https://i.imgur.com/xKo5xmf.png" },
+      { key:"SOMMERSET", name:"Sommerset", img:"https://i.imgur.com/IcgNHB1.png" },
+      { key:"FRANTIC", name:"Frantic", img:"https://i.imgur.com/L4yDoDd.png" },
+      { key:"TRIXI", name:"Trixi", img:"https://i.imgur.com/y6QBKju.png" },
+      { key:"DALIA", name:"Dalia", img:"https://i.imgur.com/QLDsSQ2.png" },
+      { key:"KATHI", name:"Kathi", img:"https://i.imgur.com/j9wxES4.png" },
+      { key:"LAURA", name:"Laura", img:"https://i.imgur.com/nAlrRnH.png" },
+      { key:"SAMANTRA", name:"Samantra", img:"https://i.imgur.com/WBNEejq.png" },
+      { key:"KATHARINAAMALIA", name:"KatharinaAmalia", img:"https://i.imgur.com/EV55mDa.jpeg" },
+      { key:"FIBI", name:"Fibi", img:"https://i.imgur.com/NkNsMg6.png" },
+      { key:"HONEYPuu".toUpperCase(), name:"HoneyPuu", img:"https://i.imgur.com/33KmuKr.png" }
+    ];
 
     // AUTOSAVE
     const SAVE_KEY = "streamer-tierlist-v2";
@@ -1251,7 +1257,11 @@
           t.name = input.value;
           saveState();
           clearTimeout(renameTimer);
-          renameTimer = setTimeout(()=> renderTiers(), 60);
+          // ✅ FIX: nach Tiers-Render auch Streamer wieder rein-rendern
+          renameTimer = setTimeout(()=>{
+            renderTiers();
+            renderStreamers();
+          }, 60);
         });
 
         left.append(lab, input);
@@ -1266,7 +1276,9 @@
         color.addEventListener("input", ()=>{
           t.color = color.value;
           saveState();
+          // ✅ FIX: nach Tiers-Render auch Streamer wieder rein-rendern
           renderTiers();
+          renderStreamers();
         });
 
         const del = document.createElement("button");
